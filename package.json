@@ -1,6 +1,6 @@
 {
   "name": "@hackettyam/api-middleware",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "Middleware for RESTful APIs in Next.js with support for authentication, validation, and error handling",
   "author": "HackettYam <contact@hackettyam.com>",
   "license": "MIT",
