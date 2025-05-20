@@ -21,7 +21,7 @@ export interface ErrorHandlerOptions {
 
 const defaultOptions: ErrorHandlerOptions = {
   isProduction: process.env.NODE_ENV === 'production',
-  logger: console.error
+  logger: console.error,
 };
 
 /**
@@ -60,7 +60,7 @@ export function withErrorHandler(options: ErrorHandlerOptions = {}) {
         // Format the error for the response
         let status = 500;
         let responseBody: any = {
-          error: 'Internal server error'
+          error: 'Internal server error',
         };
 
         // Handle custom API errors
@@ -68,20 +68,20 @@ export function withErrorHandler(options: ErrorHandlerOptions = {}) {
           status = error.status;
           responseBody = {
             error: error.message,
-            ...(error.details && { details: error.details })
+            ...(error.details && { details: error.details }),
           };
-        } 
+        }
         // Allow custom formatting
         else if (finalOptions.errorFormatter) {
           const formatted = finalOptions.errorFormatter(error);
           status = formatted.status;
           responseBody = formatted.body;
-        } 
+        }
         // Default format for regular errors
         else {
           responseBody = {
             error: finalOptions.isProduction ? 'Internal server error' : error.message,
-            ...(finalOptions.isProduction ? {} : { stack: error.stack })
+            ...(finalOptions.isProduction ? {} : { stack: error.stack }),
           };
         }
 
