@@ -33,17 +33,12 @@
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:patch": "standard-version --release-as patch",
-    "version:bump": "standard-version --skip.tag --skip.commit --skip.changelog",
     "feature:start": "git checkout develop && git checkout -b feature/",
     "feature:finish": "git checkout develop && git merge --no-ff $npm_config_branch",
-    "feature:cleanup": "git branch -D $npm_config_branch",
     "release:prepare": "git checkout develop && git checkout -b release/$(node -e \"console.log(require('./package.json').version)\")",
-    "release:finish": "node scripts/validate-release-branch.js && git checkout main && git merge --no-ff release/$(node -e \"console.log(require('./package.json').version)\") && standard-version && git checkout develop && git merge --no-ff main && git branch -D release/$(node -e \"console.log(require('./package.json').version)\")",
-    "release:validate": "node scripts/validate-release-branch.js",
+    "release:finish": "git checkout main && git merge --no-ff release/$(node -e \"console.log(require('./package.json').version)\") && npx standard-version && git checkout develop && git merge --no-ff main",
     "hotfix:start": "git checkout main && git checkout -b hotfix/",
-    "hotfix:finish": "node scripts/validate-hotfix-branch.js && git checkout main && git merge --no-ff $npm_config_branch && standard-version --release-as patch && git checkout develop && git merge --no-ff main && git branch -D $npm_config_branch",
-    "hotfix:validate": "node scripts/validate-hotfix-branch.js",
-    "protect:main": "node scripts/protect-main-branch.js"
+    "hotfix:finish": "git checkout main && git merge --no-ff $npm_config_branch && standard-version --release-as patch && git checkout develop && git merge --no-ff main"
   },
   "keywords": [
     "nextjs",
@@ -76,6 +71,8 @@
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.0.3",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.27.0",
     "@types/node": "^22.15.19",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
