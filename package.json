@@ -1,6 +1,6 @@
 {
   "name": "@hackettyam/api-middleware",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Middleware for RESTful APIs in Next.js with support for authentication, validation, and error handling",
   "author": "HackettYam <contact@hackettyam.com>",
   "license": "MIT",
@@ -29,38 +29,20 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
-    
-    "// Version management": "",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:patch": "standard-version --release-as patch",
     "version:bump": "standard-version --skip.tag --skip.commit --skip.changelog",
-    
-    "// Branch management": "",
-    "branch:develop": "git checkout -b develop",
-    
-    "// Feature workflow": "",
     "feature:start": "git checkout develop && git checkout -b feature/",
     "feature:finish": "git checkout develop && git merge --no-ff $npm_config_branch",
     "feature:cleanup": "git branch -D $npm_config_branch",
-    
-    "// Release workflow": "",
     "release:prepare": "git checkout develop && git checkout -b release/$(node -e \"console.log(require('./package.json').version)\")",
     "release:finish": "node scripts/validate-release-branch.js && git checkout main && git merge --no-ff release/$(node -e \"console.log(require('./package.json').version)\") && standard-version && git checkout develop && git merge --no-ff main && git branch -D release/$(node -e \"console.log(require('./package.json').version)\")",
     "release:validate": "node scripts/validate-release-branch.js",
-    
-    "// Hotfix workflow": "",
     "hotfix:start": "git checkout main && git checkout -b hotfix/",
     "hotfix:finish": "node scripts/validate-hotfix-branch.js && git checkout main && git merge --no-ff $npm_config_branch && standard-version --release-as patch && git checkout develop && git merge --no-ff main && git branch -D $npm_config_branch",
     "hotfix:validate": "node scripts/validate-hotfix-branch.js",
-    
-    "// Environment promotion": "",
-    "promote:prod": "echo \"ERROR: Direct promotion from develop to main is not allowed. Use the release workflow instead.\" && exit 1",
-    
-    "// Initialization": "",
-    "init:branches": "git checkout -b develop",
-    "init:scripts": "mkdir -p scripts",
     "protect:main": "node scripts/protect-main-branch.js"
   },
   "keywords": [
