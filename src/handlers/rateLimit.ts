@@ -74,18 +74,18 @@ class MemoryStore implements RateLimitStore {
   async increment(key: string): Promise<RateLimitInfo> {
     const now = Date.now();
     const record = this.hits.get(key);
-    
+
     if (!record || now > record.resetTime) {
       this.hits.set(key, { count: 1, resetTime: now + this.windowMs });
       return { totalHits: 1, timeRemaining: this.windowMs };
     }
-    
+
     const newCount = record.count + 1;
     this.hits.set(key, { count: newCount, resetTime: record.resetTime });
-    
+
     return {
       totalHits: newCount,
-      timeRemaining: record.resetTime - now
+      timeRemaining: record.resetTime - now,
     };
   }
 
@@ -98,12 +98,12 @@ class MemoryStore implements RateLimitStore {
 const defaultOptions: RateLimitOptions = {
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
-  keyGenerator: (req) => {
+  keyGenerator: req => {
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
     return `${ip}:${req.method}:${new URL(req.url).pathname}`;
   },
   message: 'Too many requests, please try again later',
-  headers: true
+  headers: true,
 };
 
 /**
@@ -114,48 +114,50 @@ const defaultOptions: RateLimitOptions = {
 export function withRateLimit(options: RateLimitOptions = {}) {
   const opts = { ...defaultOptions, ...options };
   const windowMs = opts.windowMs || defaultOptions.windowMs!;
-  
+
   // Create counter store
   const store = opts.store || new MemoryStore(windowMs);
-  
+
   return function rateLimitMiddleware(handler: NextApiHandler): NextApiHandler {
     return async function (req: NextRequest, context: any) {
       // Generate unique key for the client
       const key = opts.keyGenerator!(req);
-      
+
       try {
         // Increment the counter for this key
         const limiterInfo = await store.increment(key);
-        
+
         // Add rate limiting headers
         const headers: Record<string, string> = {};
         if (opts.headers) {
           headers['X-RateLimit-Limit'] = String(opts.max);
-          headers['X-RateLimit-Remaining'] = String(Math.max(0, (opts.max || 0) - limiterInfo.totalHits));
+          headers['X-RateLimit-Remaining'] = String(
+            Math.max(0, (opts.max || 0) - limiterInfo.totalHits)
+          );
           headers['X-RateLimit-Reset'] = String(Math.ceil(limiterInfo.timeRemaining / 1000));
         }
-        
+
         // Check if the limit has been exceeded
         if (limiterInfo.totalHits > (opts.max || Infinity)) {
           return NextResponse.json(
             { error: opts.message },
-            { 
+            {
               status: 429,
-              headers
+              headers,
             }
           );
         }
-        
+
         // Continue with the handler
         const response = await handler(req, context);
-        
+
         // Add headers to the response
         if (opts.headers) {
           Object.entries(headers).forEach(([name, value]) => {
             response.headers.set(name, value);
           });
         }
-        
+
         return response;
       } catch (error) {
         console.error('Rate limit error:', error);

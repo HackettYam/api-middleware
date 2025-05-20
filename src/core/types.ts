@@ -19,9 +19,7 @@ export type NextApiHandler = (
   context?: any
 ) => Promise<NextResponse> | NextResponse;
 
-export type MiddlewareFunction = (
-  handler: NextApiHandler
-) => NextApiHandler;
+export type MiddlewareFunction = (handler: NextApiHandler) => NextApiHandler;
 
 export interface RouterConfig {
   prefix?: string;

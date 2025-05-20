@@ -1,0 +1,16 @@
+# Build artifacts
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+
+# Examples (to be linted separately)
+examples/
+
+# Configuration files
+*.config.js
+commitlint.config.js

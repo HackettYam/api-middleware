@@ -27,7 +27,7 @@ export function parseQueryParams<T extends Record<string, any>>(
     if (!(key in rawParams)) return;
 
     const value = rawParams[key];
-    
+
     switch (type) {
       case 'number':
         parsedParams[key] = Number(value);
@@ -54,7 +54,7 @@ export function parseQueryParams<T extends Record<string, any>>(
  */
 export async function getJsonBody<T = any>(req: NextRequest): Promise<T> {
   try {
-    return await req.clone().json() as T;
+    return (await req.clone().json()) as T;
   } catch (error) {
     throw new Error('Error processing JSON body', { cause: error });
   }
@@ -99,5 +99,5 @@ export const contentType = {
   isUrlEncoded: (req: NextRequest): boolean => {
     const contentType = req.headers.get('content-type') || '';
     return contentType.includes('application/x-www-form-urlencoded');
-  }
+  },
 };

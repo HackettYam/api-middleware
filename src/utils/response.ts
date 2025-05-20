@@ -27,12 +27,12 @@ export interface ApiResponse<T = any> {
 export function success<T = any>(data?: T, options: ResponseOptions = {}): NextResponse {
   const response: ApiResponse<T> = {
     success: true,
-    ...(data !== undefined && { data })
+    ...(data !== undefined && { data }),
   };
-  
+
   return NextResponse.json(response, {
     status: options.status || 200,
-    headers: options.headers
+    headers: options.headers,
   });
 }
 
@@ -45,12 +45,12 @@ export function success<T = any>(data?: T, options: ResponseOptions = {}): NextR
 export function error(message: string, options: ResponseOptions = {}): NextResponse {
   const response: ApiResponse = {
     success: false,
-    error: message
+    error: message,
   };
-  
+
   return NextResponse.json(response, {
     status: options.status || 400,
-    headers: options.headers
+    headers: options.headers,
   });
 }
 
@@ -59,30 +59,30 @@ export function error(message: string, options: ResponseOptions = {}): NextRespo
  */
 export const http = {
   // Successful responses
-  ok: <T = any>(data?: T, headers?: Record<string, string>) => 
+  ok: <T = any>(data?: T, headers?: Record<string, string>) =>
     success(data, { status: 200, headers }),
-  created: <T = any>(data?: T, headers?: Record<string, string>) => 
+  created: <T = any>(data?: T, headers?: Record<string, string>) =>
     success(data, { status: 201, headers }),
-  accepted: <T = any>(data?: T, headers?: Record<string, string>) => 
+  accepted: <T = any>(data?: T, headers?: Record<string, string>) =>
     success(data, { status: 202, headers }),
-  noContent: (headers?: Record<string, string>) => 
+  noContent: (headers?: Record<string, string>) =>
     NextResponse.json(null, { status: 204, headers }),
-  
+
   // Error responses
-  badRequest: (message = 'Invalid request', headers?: Record<string, string>) => 
+  badRequest: (message = 'Invalid request', headers?: Record<string, string>) =>
     error(message, { status: 400, headers }),
-  unauthorized: (message = 'Unauthorized', headers?: Record<string, string>) => 
+  unauthorized: (message = 'Unauthorized', headers?: Record<string, string>) =>
     error(message, { status: 401, headers }),
-  forbidden: (message = 'Access forbidden', headers?: Record<string, string>) => 
+  forbidden: (message = 'Access forbidden', headers?: Record<string, string>) =>
     error(message, { status: 403, headers }),
-  notFound: (message = 'Not found', headers?: Record<string, string>) => 
+  notFound: (message = 'Not found', headers?: Record<string, string>) =>
     error(message, { status: 404, headers }),
-  methodNotAllowed: (message = 'Method not allowed', headers?: Record<string, string>) => 
+  methodNotAllowed: (message = 'Method not allowed', headers?: Record<string, string>) =>
     error(message, { status: 405, headers }),
-  conflict: (message = 'Conflict', headers?: Record<string, string>) => 
+  conflict: (message = 'Conflict', headers?: Record<string, string>) =>
     error(message, { status: 409, headers }),
-  tooManyRequests: (message = 'Too many requests', headers?: Record<string, string>) => 
+  tooManyRequests: (message = 'Too many requests', headers?: Record<string, string>) =>
     error(message, { status: 429, headers }),
-  serverError: (message = 'Internal server error', headers?: Record<string, string>) => 
-    error(message, { status: 500, headers })
+  serverError: (message = 'Internal server error', headers?: Record<string, string>) =>
+    error(message, { status: 500, headers }),
 };
