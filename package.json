@@ -30,32 +30,38 @@
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     
-    "// Gestión de versiones": "",
+    "// Version management": "",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:patch": "standard-version --release-as patch",
+    "version:bump": "standard-version --skip.tag --skip.commit --skip.changelog",
     
-    "// Gestión de ramas": "",
+    "// Branch management": "",
     "branch:develop": "git checkout -b develop",
     
-    "// Flujo feature": "",
+    "// Feature workflow": "",
     "feature:start": "git checkout develop && git checkout -b feature/",
     "feature:finish": "git checkout develop && git merge --no-ff $npm_config_branch",
+    "feature:cleanup": "git branch -D $npm_config_branch",
     
-    "// Flujo release": "",
+    "// Release workflow": "",
     "release:prepare": "git checkout develop && git checkout -b release/$(node -e \"console.log(require('./package.json').version)\")",
-    "release:finish": "git checkout main && git merge --no-ff release/$(node -e \"console.log(require('./package.json').version)\") && standard-version && git checkout develop && git merge --no-ff main",
+    "release:finish": "node scripts/validate-release-branch.js && git checkout main && git merge --no-ff release/$(node -e \"console.log(require('./package.json').version)\") && standard-version && git checkout develop && git merge --no-ff main && git branch -D release/$(node -e \"console.log(require('./package.json').version)\")",
+    "release:validate": "node scripts/validate-release-branch.js",
     
-    "// Flujo hotfix": "",
+    "// Hotfix workflow": "",
     "hotfix:start": "git checkout main && git checkout -b hotfix/",
-    "hotfix:finish": "git checkout main && git merge --no-ff $npm_config_branch && standard-version --release-as patch && git checkout develop && git merge --no-ff main",
+    "hotfix:finish": "node scripts/validate-hotfix-branch.js && git checkout main && git merge --no-ff $npm_config_branch && standard-version --release-as patch && git checkout develop && git merge --no-ff main && git branch -D $npm_config_branch",
+    "hotfix:validate": "node scripts/validate-hotfix-branch.js",
     
-    "// Promoción entre ambientes": "",
-    "promote:prod": "git checkout main && git merge --no-ff develop",
+    "// Environment promotion": "",
+    "promote:prod": "echo \"ERROR: Direct promotion from develop to main is not allowed. Use the release workflow instead.\" && exit 1",
     
-    "// Inicialización": "",
-    "init:branches": "git checkout -b develop"
+    "// Initialization": "",
+    "init:branches": "git checkout -b develop",
+    "init:scripts": "mkdir -p scripts",
+    "protect:main": "node scripts/protect-main-branch.js"
   },
   "keywords": [
     "nextjs",
