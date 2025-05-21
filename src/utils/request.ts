@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Extracts and validates URL query parameters
@@ -16,12 +16,12 @@ export function getQueryParams(req: NextRequest): Record<string, string> {
  * @param schema Type conversion schema
  * @returns Object with converted query parameters
  */
-export function parseQueryParams<T extends Record<string, any>>(
+export function parseQueryParams<T extends Record<string, unknown>>(
   req: NextRequest,
   schema: Record<string, 'string' | 'number' | 'boolean' | 'array'>
 ): Partial<T> {
   const rawParams = getQueryParams(req);
-  const parsedParams: Record<string, any> = {};
+  const parsedParams: Record<string, unknown> = {};
 
   Object.entries(schema).forEach(([key, type]) => {
     if (!(key in rawParams)) return;
@@ -52,7 +52,7 @@ export function parseQueryParams<T extends Record<string, any>>(
  * @param req Next.js request
  * @returns Promise that resolves to JSON data
  */
-export async function getJsonBody<T = any>(req: NextRequest): Promise<T> {
+export async function getJsonBody<T = Record<string, unknown>>(req: NextRequest): Promise<T> {
   try {
     return (await req.clone().json()) as T;
   } catch (error) {
@@ -89,15 +89,15 @@ export function getHeader(req: NextRequest, header: string): string | null {
  */
 export const contentType = {
   isJson: (req: NextRequest): boolean => {
-    const contentType = req.headers.get('content-type') || '';
+    const contentType = req.headers.get('content-type') ?? '';
     return contentType.includes('application/json');
   },
   isFormData: (req: NextRequest): boolean => {
-    const contentType = req.headers.get('content-type') || '';
+    const contentType = req.headers.get('content-type') ?? '';
     return contentType.includes('multipart/form-data');
   },
   isUrlEncoded: (req: NextRequest): boolean => {
-    const contentType = req.headers.get('content-type') || '';
+    const contentType = req.headers.get('content-type') ?? '';
     return contentType.includes('application/x-www-form-urlencoded');
   },
 };

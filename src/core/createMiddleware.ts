@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { MiddlewareConfig, NextApiHandler } from './types';
+import { type NextRequest, NextResponse } from 'next/server';
+
+import type { MiddlewareConfig, NextApiHandler } from './types';
 
 const defaultConfig: MiddlewareConfig = {
   basePath: '/api',
@@ -20,12 +21,13 @@ export function createMiddleware(config: MiddlewareConfig = {}) {
   const finalConfig = { ...defaultConfig, ...config };
 
   return function withMiddleware(handler: NextApiHandler): NextApiHandler {
-    return async function middleware(req: NextRequest, context: any) {
+    return async function middleware(req: NextRequest, context?: Record<string, unknown>) {
       // Implement CORS if enabled
       if (finalConfig.enableCors) {
-        const origin = req.headers.get('origin') || '';
+        const origin = req.headers.get('origin') ?? '';
         const isAllowedOrigin =
-          finalConfig.allowedOrigins?.includes('*') || finalConfig.allowedOrigins?.includes(origin);
+          !!finalConfig.allowedOrigins?.includes('*') ||
+          !!finalConfig.allowedOrigins?.includes(origin);
 
         if (!isAllowedOrigin) {
           return NextResponse.json({ error: 'CORS origin not allowed' }, { status: 403 });
@@ -51,7 +53,7 @@ export function createMiddleware(config: MiddlewareConfig = {}) {
 
         // Add CORS headers if enabled
         if (finalConfig.enableCors) {
-          const origin = req.headers.get('origin') || '';
+          const origin = req.headers.get('origin') ?? '';
           if (finalConfig.allowedOrigins?.includes('*')) {
             response.headers.set('Access-Control-Allow-Origin', '*');
           } else if (origin && finalConfig.allowedOrigins?.includes(origin)) {

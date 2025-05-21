@@ -1,8 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { NextApiHandler } from '../core/types';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-type ValidationSchema = Record<string, any>;
-type ValidationFunction = (data: any) => { valid: boolean; errors?: Record<string, string> };
+import type { NextApiHandler } from '../core/types';
+
+// Define a more specific validation rule structure
+type ValidationRule = {
+  required?: boolean;
+  type?: string;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: string | RegExp;
+  patternMessage?: string;
+};
+
+type ValidationSchema = Record<string, ValidationRule>;
+type ValidationData = Record<string, unknown>;
+type ValidationResult = { valid: boolean; errors?: Record<string, string> };
+type ValidationFunction = (data: ValidationData) => ValidationResult;
 
 /**
  * Middleware for data validation in API routes
@@ -11,10 +27,10 @@ type ValidationFunction = (data: any) => { valid: boolean; errors?: Record<strin
  */
 export function withValidation(schema: ValidationSchema | ValidationFunction) {
   return function validationMiddleware(handler: NextApiHandler): NextApiHandler {
-    return async function (req: NextRequest, context: any) {
+    return async function (req: NextRequest, context?: Record<string, unknown>) {
       // Get request data according to the HTTP method
-      let requestData;
-      const contentType = req.headers.get('content-type') || '';
+      let requestData: ValidationData = {};
+      const contentType = req.headers.get('content-type') ?? '';
 
       if (req.method === 'GET' || req.method === 'DELETE') {
         // Extract data from query parameters
@@ -23,7 +39,7 @@ export function withValidation(schema: ValidationSchema | ValidationFunction) {
       } else if (contentType.includes('application/json')) {
         // Extract data from JSON body
         try {
-          requestData = await req.clone().json();
+          requestData = (await req.clone().json()) as ValidationData;
         } catch (error) {
           return NextResponse.json({ error: 'Invalid JSON body', cause: error }, { status: 400 });
         }
@@ -38,7 +54,7 @@ export function withValidation(schema: ValidationSchema | ValidationFunction) {
       }
 
       // Validate the data
-      let validation;
+      let validation: ValidationResult;
       if (typeof schema === 'function') {
         // Use the custom validation function
         validation = schema(requestData);
@@ -71,15 +87,12 @@ export function withValidation(schema: ValidationSchema | ValidationFunction) {
  * Simple schema-based validation function
  * Note: For a real implementation, it is recommended to use libraries like zod, yup, etc.
  */
-function validateWithSchema(
-  data: any,
-  schema: ValidationSchema
-): { valid: boolean; errors?: Record<string, string> } {
+function validateWithSchema(data: ValidationData, schema: ValidationSchema): ValidationResult {
   const errors: Record<string, string> = {};
   let valid = true;
 
   // Iterate through the schema and validate each field
-  Object.entries(schema).forEach(([field, rule]) => {
+  Object.entries(schema).forEach(([field, rule]: [string, ValidationRule]) => {
     const value = data[field];
 
     // Check if the field is required
@@ -132,7 +145,7 @@ function validateWithSchema(
       if (rule.pattern && typeof value === 'string') {
         const regex = new RegExp(rule.pattern);
         if (!regex.test(value)) {
-          errors[field] = rule.patternMessage || `The field ${field} has an invalid format`;
+          errors[field] = rule.patternMessage ?? `The field ${field} has an invalid format`;
           valid = false;
         }
       }

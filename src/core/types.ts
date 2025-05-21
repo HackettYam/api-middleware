@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD';
 
@@ -16,7 +16,7 @@ export interface MiddlewareConfig {
 
 export type NextApiHandler = (
   req: NextRequest,
-  context?: any
+  context?: Record<string, unknown>
 ) => Promise<NextResponse> | NextResponse;
 
 export type MiddlewareFunction = (handler: NextApiHandler) => NextApiHandler;

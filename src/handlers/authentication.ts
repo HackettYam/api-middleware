@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { NextApiHandler } from '../core/types';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+import type { NextApiHandler } from '../core/types';
 
 /**
  * Configuration options for the authentication middleware
@@ -8,8 +10,10 @@ export interface AuthOptions {
   tokenSecret?: string;
   tokenHeader?: string;
   tokenType?: 'Bearer' | 'JWT' | 'Custom';
-  verifyToken?: (token: string) => Promise<boolean | object | any> | boolean | object | any;
-  onSuccess?: (tokenData: any, req: NextRequest) => void;
+  verifyToken?: (
+    token: string
+  ) => Promise<boolean | Record<string, unknown>> | boolean | Record<string, unknown>;
+  onSuccess?: (tokenData: Record<string, unknown> | boolean, req: NextRequest) => void;
 }
 
 const defaultAuthOptions: AuthOptions = {
@@ -26,8 +30,8 @@ export function withAuth(options: AuthOptions = {}) {
   const finalOptions = { ...defaultAuthOptions, ...options };
 
   return function authMiddleware(handler: NextApiHandler): NextApiHandler {
-    return async function (req: NextRequest, context: any) {
-      const authHeader = req.headers.get(finalOptions.tokenHeader || 'Authorization');
+    return async function (req: NextRequest, context?: Record<string, unknown>) {
+      const authHeader = req.headers.get(finalOptions.tokenHeader ?? 'Authorization');
 
       if (!authHeader) {
         return NextResponse.json({ error: 'Authorization required' }, { status: 401 });
@@ -48,7 +52,7 @@ export function withAuth(options: AuthOptions = {}) {
 
       // Verify the token
       try {
-        let tokenData = true;
+        let tokenData: boolean | Record<string, unknown> = true;
 
         if (finalOptions.verifyToken) {
           tokenData = await Promise.resolve(finalOptions.verifyToken(token));

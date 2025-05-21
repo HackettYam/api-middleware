@@ -1,5 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { HttpMethod, RouterConfig, RouteDefinition, NextApiHandler } from './types';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+import type {
+  HttpMethod,
+  MiddlewareFunction,
+  NextApiHandler,
+  RouteDefinition,
+  RouterConfig,
+} from './types';
 
 /**
  * Creates a router for REST APIs in Next.js
@@ -8,8 +16,8 @@ import { HttpMethod, RouterConfig, RouteDefinition, NextApiHandler } from './typ
  */
 export function createRouter(config: RouterConfig = {}) {
   const routes: RouteDefinition[] = [];
-  const prefix = config.prefix || '';
-  const globalMiddlewares = config.middlewares || [];
+  const prefix = config.prefix ?? '';
+  const globalMiddlewares = config.middlewares ?? [];
 
   // Functions to define routes for different HTTP methods
   const router = {
@@ -43,22 +51,25 @@ export function createRouter(config: RouterConfig = {}) {
     },
 
     // Method to add global middleware
-    use: (middleware: any) => {
+    use: (middleware: MiddlewareFunction) => {
       globalMiddlewares.push(middleware);
       return router;
     },
 
     // Method to add middleware to a specific route
-    withMiddleware: (middleware: any) => {
+    withMiddleware: (middleware: MiddlewareFunction) => {
       if (routes.length > 0) {
         const lastRoute = routes[routes.length - 1];
-        lastRoute.middlewares = [...(lastRoute.middlewares || []), middleware];
+        lastRoute.middlewares = [...(lastRoute.middlewares ?? []), middleware];
       }
       return router;
     },
 
     // Function to handle incoming requests
-    handler: async (req: NextRequest, context: any = {}): Promise<NextResponse> => {
+    handler: async (
+      req: NextRequest,
+      context: Record<string, unknown> = {}
+    ): Promise<NextResponse> => {
       const url = new URL(req.url);
       const pathname = url.pathname;
       const method = req.method as HttpMethod;
@@ -77,7 +88,7 @@ export function createRouter(config: RouterConfig = {}) {
 
       // Extract route parameters if there are dynamic routes
       const params = extractRouteParams(route.path, pathname);
-      const enhancedContext = { ...context, params };
+      const enhancedContext: Record<string, unknown> = { ...context, params };
 
       // Apply middlewares (global and route-specific)
       let handler = route.handler;

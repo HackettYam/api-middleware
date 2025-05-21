@@ -11,11 +11,11 @@ export interface ResponseOptions {
 /**
  * Standard response format for APIs
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 /**
@@ -24,14 +24,14 @@ export interface ApiResponse<T = any> {
  * @param options Additional options (status, headers)
  * @returns Formatted response for Next.js
  */
-export function success<T = any>(data?: T, options: ResponseOptions = {}): NextResponse {
+export function success<T = unknown>(data?: T, options: ResponseOptions = {}): NextResponse {
   const response: ApiResponse<T> = {
     success: true,
     ...(data !== undefined && { data }),
   };
 
   return NextResponse.json(response, {
-    status: options.status || 200,
+    status: options.status ?? 200,
     headers: options.headers,
   });
 }
@@ -49,7 +49,7 @@ export function error(message: string, options: ResponseOptions = {}): NextRespo
   };
 
   return NextResponse.json(response, {
-    status: options.status || 400,
+    status: options.status ?? 400,
     headers: options.headers,
   });
 }
@@ -59,11 +59,11 @@ export function error(message: string, options: ResponseOptions = {}): NextRespo
  */
 export const http = {
   // Successful responses
-  ok: <T = any>(data?: T, headers?: Record<string, string>) =>
+  ok: <T = unknown>(data?: T, headers?: Record<string, string>) =>
     success(data, { status: 200, headers }),
-  created: <T = any>(data?: T, headers?: Record<string, string>) =>
+  created: <T = unknown>(data?: T, headers?: Record<string, string>) =>
     success(data, { status: 201, headers }),
-  accepted: <T = any>(data?: T, headers?: Record<string, string>) =>
+  accepted: <T = unknown>(data?: T, headers?: Record<string, string>) =>
     success(data, { status: 202, headers }),
   noContent: (headers?: Record<string, string>) =>
     NextResponse.json(null, { status: 204, headers }),

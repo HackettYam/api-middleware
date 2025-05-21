@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { NextApiHandler } from '../core/types';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+import type { NextApiHandler } from '../core/types';
 
 /**
  * Options for rate limiting middleware
@@ -77,20 +79,21 @@ class MemoryStore implements RateLimitStore {
 
     if (!record || now > record.resetTime) {
       this.hits.set(key, { count: 1, resetTime: now + this.windowMs });
-      return { totalHits: 1, timeRemaining: this.windowMs };
+      return Promise.resolve({ totalHits: 1, timeRemaining: this.windowMs });
     }
 
     const newCount = record.count + 1;
     this.hits.set(key, { count: newCount, resetTime: record.resetTime });
 
-    return {
+    return Promise.resolve({
       totalHits: newCount,
       timeRemaining: record.resetTime - now,
-    };
+    });
   }
 
   async reset(key: string): Promise<void> {
     this.hits.delete(key);
+    await Promise.resolve();
   }
 }
 
@@ -99,7 +102,7 @@ const defaultOptions: RateLimitOptions = {
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
   keyGenerator: req => {
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
     return `${ip}:${req.method}:${new URL(req.url).pathname}`;
   },
   message: 'Too many requests, please try again later',
@@ -113,13 +116,13 @@ const defaultOptions: RateLimitOptions = {
  */
 export function withRateLimit(options: RateLimitOptions = {}) {
   const opts = { ...defaultOptions, ...options };
-  const windowMs = opts.windowMs || defaultOptions.windowMs!;
+  const windowMs = opts.windowMs ?? defaultOptions.windowMs!;
 
   // Create counter store
-  const store = opts.store || new MemoryStore(windowMs);
+  const store = opts.store ?? new MemoryStore(windowMs);
 
   return function rateLimitMiddleware(handler: NextApiHandler): NextApiHandler {
-    return async function (req: NextRequest, context: any) {
+    return async function (req: NextRequest, context?: Record<string, unknown>) {
       // Generate unique key for the client
       const key = opts.keyGenerator!(req);
 
@@ -132,13 +135,13 @@ export function withRateLimit(options: RateLimitOptions = {}) {
         if (opts.headers) {
           headers['X-RateLimit-Limit'] = String(opts.max);
           headers['X-RateLimit-Remaining'] = String(
-            Math.max(0, (opts.max || 0) - limiterInfo.totalHits)
+            Math.max(0, (opts.max ?? 0) - limiterInfo.totalHits)
           );
           headers['X-RateLimit-Reset'] = String(Math.ceil(limiterInfo.timeRemaining / 1000));
         }
 
         // Check if the limit has been exceeded
-        if (limiterInfo.totalHits > (opts.max || Infinity)) {
+        if (limiterInfo.totalHits > (opts.max ?? Infinity)) {
           return NextResponse.json(
             { error: opts.message },
             {
