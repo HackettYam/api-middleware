@@ -28,36 +28,110 @@ module.exports = [
   // Base JS configuration
   js.configs.recommended,
 
-  // TypeScript configuration
-  ...compat.config({
-    extends: [
-      'plugin:@typescript-eslint/recommended',
-      'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    ],
-    parser: '@typescript-eslint/parser',
-    plugins: ['@typescript-eslint'],
-    parserOptions: {
-      project: './tsconfig.json',
-      ecmaVersion: 2020,
-      sourceType: 'module',
-    },
-  }),
+  // TypeScript configuration - for files in src
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ...compat.config({
+      extends: [
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
+      ],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+      parserOptions: {
+        project: './tsconfig.json',
+        ecmaVersion: 2020,
+        sourceType: 'module',
+      },
+    }),
+  },
 
-  // Next.js configuration for APIs
-  ...compat.config({
-    extends: ['plugin:@next/next/recommended'],
-  }),
+  // Next.js configuration for APIs - for files in src
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ...compat.config({
+      extends: ['plugin:@next/next/recommended'],
+    }),
+  },
 
-  // Import plugin for optimizing imports
-  ...compat.config({
-    extends: ['plugin:import/recommended', 'plugin:import/typescript'],
-    plugins: ['import'],
-    settings: {
-      'import/resolver': {
-        typescript: {},
+  // Import plugin for optimizing imports - for files in src
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ...compat.config({
+      extends: ['plugin:import/recommended', 'plugin:import/typescript'],
+      plugins: ['import'],
+      settings: {
+        'import/resolver': {
+          typescript: {},
+        },
+      },
+    }),
+  },
+
+  // Scripts configuration - JavaScript specific
+  {
+    files: ['scripts/**/*.js'],
+    // Use standard JavaScript ESLint config for scripts
+    languageOptions: {
+      // No TypeScript parser for JavaScript files
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'commonjs',
+      },
+      globals: {
+        // Node.js globals
+        require: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        global: 'readonly',
       },
     },
-  }),
+    rules: {
+      // Allow console.log in scripts
+      'no-console': 'off',
+      // Allow process.exit in scripts
+      'no-process-exit': 'off',
+      // Allow unused catch parameters
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
+      // Disable TypeScript rules for JavaScript files
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/ban-types': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-inferrable-types': 'off',
+      '@typescript-eslint/no-empty-interface': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-this-alias': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/consistent-type-imports': 'off',
+      '@typescript-eslint/consistent-type-assertions': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 
   // Specific rules for Next.js API Routes/Middleware
   {
